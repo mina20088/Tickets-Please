@@ -7,14 +7,19 @@ use App\Http\Requests\API\V1\StoreUserRequest;
 use App\Http\Requests\API\V1\UpdateUserRequest;
 use App\Http\Resources\V1\UsersResource;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class UsersController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        if($request->query('relationships')){
+            return UsersResource::collection(User::with($request->query('relationships'))->paginate());
+        }
+
         return UsersResource::collection(User::paginate());
     }
 
@@ -31,6 +36,9 @@ class UsersController extends Controller
      */
     public function show(User $user)
     {
+        if(\request()->query('relationships')){
+            $user->load(request()->query('relationships'));
+        }
         return UsersResource::make($user);
     }
 

@@ -2,10 +2,19 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Routing\Route;
 
+/**
+ * @property int $id
+ * @property string $title
+ * @property string $description
+ * @property string $status
+ * @property int $user_id
+ * @property User $user
+ */
 class TicketsResource extends JsonResource
 {
 
@@ -21,27 +30,37 @@ class TicketsResource extends JsonResource
             'id' => $this->id,
             'attributes' => [
                 'title' => $this->title,
-                'description' => $this->description,
+                $this->mergeWhen(
+                    $request->routeIs('tickets.*'),
+                    [
+                        'description' => $this->description
+                    ]
+                ),
                 'status' => $this->status
             ],
             'links' => [
                 'self' => route('tickets.show', $this->id)
             ],
-            'relationships' => [
-                'user' => [
-                    'data' => [
-                        'type' => 'user',
-                        'id' => (string)$this->user_id,
-                    ],
-                    'links' => [
-                        'self' => 'todo'
-                    ],
+            $this->mergeWhen(
+                $request->routeIs('tickets.*'),
+                [
+                    'relationships' =>
+                        $this->whenLoaded('user', function () {
+                            return [
+                                'user' => [
+                                    'data' => [
+                                        'type' => 'User',
+                                        'id' => $this->user->id
+                                    ],
+                                    'links' => [
+                                        'self' => route('users.show', $this->user->id)
+                                    ]
 
-                ]
-            ],
-            'includes' => [
-                'user' => new UsersResource($this->user)
-            ]
+                                ],
+                            ];
+                        })
+                ])
+
         ];
     }
 }
