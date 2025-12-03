@@ -44,21 +44,20 @@ class TicketsResource extends JsonResource
             $this->mergeWhen(
                 $request->routeIs('tickets.*'),
                 [
-                    'relationships' =>
-                        $this->whenLoaded('user', function () {
-                            return [
-                                'user' => [
-                                    'data' => [
-                                        'type' => 'User',
-                                        'id' => $this->user->id
-                                    ],
-                                    'links' => [
-                                        'self' => route('users.show', $this->user->id)
-                                    ]
-
-                                ],
-                            ];
-                        })
+                    'relationships' => $this->whenLoaded('user', function(){
+                        return [
+                            'data' => [
+                                'type' => 'User',
+                                'id' => $this->user->id
+                            ],
+                            'links' => [
+                                'self' => route('users.show', $this->user->id)
+                            ]
+                        ];
+                    },[]),
+                    'included' => [
+                        'user' => UsersResource::make($this->whenLoaded('user'))
+                    ]
                 ])
 
         ];

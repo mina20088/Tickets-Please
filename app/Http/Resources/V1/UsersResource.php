@@ -38,29 +38,33 @@ class UsersResource extends JsonResource
                     'updates_at' => $this->updated_at
                 ])
             ],
-            'links' => [
-                'self' => route('users.show', $this->id),
-            ],
-            'relationships' => [
-                'tickets' => $this->whenLoaded('tickets', function(){
-                    return [
-                        'data' => $this->tickets->pluck('id')->map(function ($id) {
-                            return [
-                                'type' => 'Ticket',
-                                'id' => $id
-                            ];
-                        }),
-                        'links' => [
-                            'self' => $this->tickets->pluck('id')->map(function ($id) {
-                                return route('tickets.show', $id);
+            $this->mergeWhen($request->routeIs('users.*'), [
+                'links' => [
+                    'self' => route('users.show', $this->id),
+                ],
+                'relationships' => [
+                    'tickets' => $this->whenLoaded('tickets', function(){
+                        return [
+                            'data' => $this->tickets->pluck('id')->map(function ($id) {
+                                return [
+                                    'type' => 'Ticket',
+                                    'id' => $id
+                                ];
                             }),
-                        ]
-                    ];
-                }),
-            ],
-            'include' => [
-                'tickets' => TicketsResource::collection($this->whenLoaded('tickets')),
-            ]
+                            'links' => [
+                                'self' => $this->tickets->pluck('id')->map(function ($id) {
+                                    return route('tickets.show', $id);
+                                }),
+                            ]
+                        ];
+                    }),
+                ],
+                'included' => [
+                    'tickets' => TicketsResource::collection($this->whenLoaded('tickets')),
+                ]
+            ]),
+
+
 
 
         ];

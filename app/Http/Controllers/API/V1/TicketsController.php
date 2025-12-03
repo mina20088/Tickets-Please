@@ -16,6 +16,7 @@ class TicketsController extends Controller
     public function index()
     {
         if(\request()->query('relationships')){
+
             return TicketsResource::collection(Ticket::with(request()->query('relationships'))->paginate());
         }
          return  TicketsResource::collection(Ticket::paginate());
@@ -34,6 +35,9 @@ class TicketsController extends Controller
      */
     public function show(Ticket $ticket)
     {
+        if(\request()->query('relationships')){
+            $ticket->load(request()->query('relationships'));
+        }
          return TicketsResource::make($ticket);
     }
 
