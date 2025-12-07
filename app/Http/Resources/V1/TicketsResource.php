@@ -5,7 +5,7 @@ namespace App\Http\Resources\V1;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Routing\Route;
+
 
 /**
  * @property int $id
@@ -13,7 +13,7 @@ use Illuminate\Routing\Route;
  * @property string $description
  * @property string $status
  * @property int $user_id
- * @property User $user
+ * @property User $author
  */
 class TicketsResource extends JsonResource
 {
@@ -27,7 +27,7 @@ class TicketsResource extends JsonResource
     {
         return [
             'type' => 'Ticket',
-            'id' => $this->id,
+            'id' =>  $this->id,
             'attributes' => [
                 'title' => $this->title,
                 $this->mergeWhen(
@@ -42,21 +42,25 @@ class TicketsResource extends JsonResource
                 'self' => route('tickets.show', $this->id)
             ],
             $this->mergeWhen(
-                $request->routeIs('tickets.*'),
+                $request->routeIs('tickets.*')||
+                $request->routeIs('authors.tickets.*'),
                 [
-                    'relationships' => $this->whenLoaded('user', function(){
+                    'relationships' => $this->whenLoaded('author', function(){
                         return [
-                            'data' => [
-                                'type' => 'User',
-                                'id' => $this->user->id
-                            ],
-                            'links' => [
-                                'self' => route('users.show', $this->user->id)
+                            'author' => [
+                                'data' => [
+                                    'type' => 'Author',
+                                    'id' => $this->author->id
+                                ],
+                                'links' => [
+                                    'self' => route('authors.show', $this->author->id)
+                                ]
                             ]
+
                         ];
                     },[]),
                     'included' => [
-                        'user' => UsersResource::make($this->whenLoaded('user'))
+                        'author' => UsersResource::make($this->whenLoaded('author'))
                     ]
                 ])
 

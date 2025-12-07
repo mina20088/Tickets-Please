@@ -7,20 +7,17 @@ use App\Http\Requests\API\V1\StoreUserRequest;
 use App\Http\Requests\API\V1\UpdateUserRequest;
 use App\Http\Resources\V1\UsersResource;
 use App\Models\User;
+use App\services\v1\AuthorService;
 use Illuminate\Http\Request;
 
-class UsersController extends Controller
+class AuthorsController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(AuthorService $service)
     {
-        if($request->query('relationships')){
-            return UsersResource::collection(User::with($request->query('relationships'))->paginate());
-        }
-
-        return UsersResource::collection(User::paginate());
+        return UsersResource::collection(User::filter($service)->paginate());
     }
 
     /**
@@ -34,18 +31,16 @@ class UsersController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(AuthorService $service,User $author)
     {
-        if(\request()->query('relationships')){
-            $user->load(request()->query('relationships'));
-        }
-        return UsersResource::make($user);
+        return UsersResource::make(
+            User::where('id', $author->id)->filter($service)->first());
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $author)
     {
         //
     }
@@ -53,7 +48,7 @@ class UsersController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(User $author)
     {
         //
     }

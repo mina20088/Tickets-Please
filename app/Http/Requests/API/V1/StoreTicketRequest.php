@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\API\V1;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTicketRequest extends FormRequest
@@ -11,18 +12,27 @@ class StoreTicketRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
-        return [
-            //
+        $rules = [
+            'data.attributes.title' => 'required|string',
+            'data.attributes.description' => 'required|string',
+            'data.attributes.status' => 'required|string|in:A,C,H,X',
         ];
+
+        if($this->routeIs('tickets.*'))
+        {
+            $rules['data.relationships.author.data.id'] = 'required|integer';
+        }
+
+        return $rules;
     }
 }

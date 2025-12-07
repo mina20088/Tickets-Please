@@ -2,14 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\services\v1\RequestFilter;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @method static filter(\App\services\v1\AuthorService $service)
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -55,5 +59,10 @@ class User extends Authenticatable
     public function Tickets(): User|HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function scopeFilter(Builder $builder, RequestFilter $filter): Builder
+    {
+        return $filter->apply($builder);
     }
 }

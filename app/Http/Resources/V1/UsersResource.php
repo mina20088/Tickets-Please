@@ -27,20 +27,20 @@ class UsersResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'type' => 'User',
+            'type' => 'Author',
             'id' => $this->id,
             'attributes' => [
                 'name' => $this->name,
                 'email' => $this->email,
-                $this->mergeWhen(\request()->routeIs('users.*'), [
+                $this->mergeWhen(\request()->routeIs('authors.*'), [
                     'email_verified_at' => $this->email_verified_at,
                     'created_at' => $this->created_at,
                     'updates_at' => $this->updated_at
                 ])
             ],
-            $this->mergeWhen($request->routeIs('users.*'), [
+            $this->mergeWhen($request->routeIs('authors.*'), [
                 'links' => [
-                    'self' => route('users.show', $this->id),
+                    'self' => route('authors.show', $this->id),
                 ],
                 'relationships' => [
                     'tickets' => $this->whenLoaded('tickets', function(){
