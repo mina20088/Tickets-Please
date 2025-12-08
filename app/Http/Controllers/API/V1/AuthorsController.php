@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\API\V1\StoreUserRequest;
-use App\Http\Requests\API\V1\UpdateUserRequest;
+use App\Http\Requests\API\V1\UsersRequests\StoreUserRequest;
+use App\Http\Requests\API\V1\UsersRequests\UpdateUserRequest;
 use App\Http\Resources\V1\UsersResource;
 use App\Models\User;
 use App\services\v1\AuthorService;
-use Illuminate\Http\Request;
 
 class AuthorsController extends Controller
 {

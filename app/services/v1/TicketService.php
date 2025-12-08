@@ -4,15 +4,14 @@ namespace App\services\v1;
 
 use App\Models\Ticket;
 use App\Models\User;
-use http\Client\Response;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Support\Collection as SupportCollection;
+use LaravelIdea\Helper\App\Models\_IH_Ticket_C;
+
 
 class TicketService extends RequestFilter
 {
@@ -62,7 +61,7 @@ class TicketService extends RequestFilter
     }
 
 
-    public function findTicketById(int $id , bool $filter = false): Model|Collection|null
+    public function findTicketById(int $id , bool $filter = false): Model|Collection|_IH_Ticket_C|Ticket|array|null
     {
         if($filter){
             return Ticket::filters($this)->findOrFail($id);
@@ -77,16 +76,25 @@ class TicketService extends RequestFilter
             ->paginate();
     }
 
-    public function create(User $user,array $validatedData)
+    public function create(array $validatedData)
     {
 
          return Ticket::create([
-             'title' => Arr::get($validatedData, 'data.attributes.title'),
-             'description' =>Arr::get($validatedData, 'data.attributes.description'),
-             'status' => Arr::get($validatedData, 'data.attributes.status'),
-             'user_id' => $user->id,
+             'title' => Arr::get($validatedData, 'title'),
+             'description' =>Arr::get($validatedData, 'description'),
+             'status' => Arr::get($validatedData, 'status'),
+             'user_id' => Arr::get($validatedData, 'user_id'),
          ]);
 
+    }
+
+    public function update(Ticket $ticket , array $validatedData): bool
+    {
+        return $ticket->update([
+            'title' => Arr::get($validatedData, 'title'),
+            'description' =>Arr::get($validatedData, 'description'),
+            'status' => Arr::get($validatedData, 'status'),
+        ]);
     }
 
 }

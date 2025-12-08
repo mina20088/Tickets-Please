@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\API\V1\StoreTicketRequest;
-use App\Http\Requests\API\V1\UpdateTicketRequest;
+use App\Http\Requests\API\V1\TicketsRequests\ReplaceTicketRequest;
+use App\Http\Requests\API\V1\TicketsRequests\StoreTicketRequest;
+use App\Http\Requests\API\V1\TicketsRequests\UpdateTicketRequest;
 use App\Http\Resources\V1\TicketsResource;
 use App\Models\Ticket;
-use App\Models\User;
 use App\services\v1\AuthorService;
 use App\services\v1\TicketService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Translation\Exception\NotFoundResourceException;
 
 
 class TicketsController extends Controller
@@ -39,17 +37,17 @@ class TicketsController extends Controller
     public
     function store(StoreTicketRequest $request)
     {
-        try{
-            $user = $this->authorService->findUserById($request->input('data.relationships.author.data.id'));
-        }catch (ModelNotFoundException $e){
+        try {
+
+            $ticket = $this->ticketService->create($request->mappedAttributes());
+
+            return TicketsResource::make($ticket->load('author'));
+
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'error' => "there are no other with the id {$request->input('data.relationships.author.data.id')} in our database}"
             ], 404);
         }
-
-        $ticket = $this->ticketService->create($user,$request->validated());
-
-        return TicketsResource::make($ticket->load('author'));
 
     }
 
@@ -59,11 +57,12 @@ class TicketsController extends Controller
     public
     function show(int $ticket_id)
     {
-        try
-        {
+        try {
             $ticket = $this->ticketService->findTicketById($ticket_id);
-        } catch (ModelNotFoundException)
-        {
+
+            return TicketsResource::make($ticket);
+
+        } catch (ModelNotFoundException) {
             return response()->json(
                 [
                     'error' => "there are no ticket with the id {$ticket_id} in our database"
@@ -71,7 +70,7 @@ class TicketsController extends Controller
                 404
             );
         }
-        return TicketsResource::make($ticket);
+
     }
 
     /**
@@ -83,6 +82,23 @@ class TicketsController extends Controller
         //
     }
 
+    public function replace(ReplaceTicketRequest $request, int $ticket_id)
+    {
+        try {
+            $ticket = $this->ticketService->findTicketById($ticket_id);
+
+            $this->ticketService->update($ticket, $request->mappedAttributes());
+
+            return TicketsResource::make($ticket);
+
+        } catch (ModelNotFoundException) {
+            return response()->json([
+                'error' => "there are no ticket with the id {$ticket_id} in our database"
+            ], 404);
+        }
+
+    }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -91,13 +107,16 @@ class TicketsController extends Controller
     {
         try {
             $ticket = $this->ticketService->findTicketById($ticket_id);
+
+            $ticket->delete();
+
+            return response()->noContent();
+
         } catch (ModelNotFoundException) {
             return response()->json([
                 'error' => "there are no ticket with the id {$ticket_id} in our database"
             ], 201);
         }
 
-        $ticket->delete();
-        return response()->noContent();
     }
 }

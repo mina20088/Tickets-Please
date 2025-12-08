@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\API\V1;
+namespace App\Http\Requests\API\V1\TicketsRequests;
 
+use App\Rules\AuthorExists;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTicketRequest extends FormRequest
+class StoreTicketRequest extends BaseTicketRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -30,9 +30,11 @@ class StoreTicketRequest extends FormRequest
 
         if($this->routeIs('tickets.*'))
         {
-            $rules['data.relationships.author.data.id'] = 'required|integer';
+            $rules['data.relationships.author.data.id'] = ['required', 'integer', new AuthorExists()];
         }
 
         return $rules;
     }
+
+
 }

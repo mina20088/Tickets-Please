@@ -69,9 +69,9 @@ class AuthorService extends RequestFilter
     public function createUserTicket(User $author, array $ticketData)
     {
         return Ticket::create([
-            'title' =>  Arr::get($ticketData, 'data.attributes.title'),
-            'description' => Arr::get($ticketData, 'data.attributes.description'),
-            'status' => Arr::get($ticketData, 'data.attributes.status'),
+            'title' =>  Arr::get($ticketData, 'title'),
+            'description' => Arr::get($ticketData, 'description'),
+            'status' => Arr::get($ticketData, 'status'),
             'user_id' => $author->id
         ]);
     }
