@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\API\V1\TicketsRequests;
 
+use App\Permissions\Abilities;
 use App\Rules\AuthorExists;
 use Illuminate\Contracts\Validation\ValidationRule;
 
@@ -26,11 +27,12 @@ class StoreTicketRequest extends BaseTicketRequest
             'data.attributes.title' => 'required|string',
             'data.attributes.description' => 'required|string',
             'data.attributes.status' => 'required|string|in:A,C,H,X',
+            'data.relationships.author.data.id' => ['required', 'integer', new AuthorExists()]
         ];
 
-        if($this->routeIs('tickets.*'))
+        if($this->user()->tokenCan(Abilities::CreateOwnTicket))
         {
-            $rules['data.relationships.author.data.id'] = ['required', 'integer', new AuthorExists()];
+            $rules['data.relationships.author.data.id'][] = ['in:' , $this->user()->id];
         }
 
         return $rules;

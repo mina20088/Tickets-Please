@@ -43,11 +43,11 @@ class TicketsController extends Controller
     {
         try {
             // Retrieve the author from the request to authorize against.
-            $authorId = $request->input('data.relationships.author.data.id');
+/*            $authorId = $request->input('data.relationships.author.data.id');
 
-            $author = $this->authorService->findUserById($authorId);
+            $author = $this->authorService->findUserById($authorId);*/
 
-            $this->authorize('create', [Ticket::class, $author]);
+            $this->authorize('create', [Ticket::class]);
 
             $ticket = $this->ticketService->create($request->mappedAttributes());
 
