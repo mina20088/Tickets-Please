@@ -100,16 +100,10 @@ class TicketsController extends Controller
 
         }
         catch (AuthorizationException){
-                    return response()->json([
-                        'error' => "you cant update user because you dont have the permission to do so"
-                    ],403);        }
+            return $this->error("You don't have permission to update please refer back to the administrator.", 401);
+        }
         catch (ModelNotFoundException){
-            return response()->json(
-                [
-                    'error' => "there are no ticket with the id {$ticket_id} in our database"
-                ],
-                404
-            );
+            return $this->error("there are no ticket with the id {$ticket_id} in our database", 404);
         }
     }
 
