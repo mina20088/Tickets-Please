@@ -8,13 +8,12 @@ use App\Http\Requests\API\V1\TicketsRequests\StoreTicketRequest;
 use App\Http\Requests\API\V1\TicketsRequests\UpdateTicketRequest;
 use App\Http\Resources\V1\TicketsResource;
 use App\Models\Ticket;
-use App\Models\User;
 use App\Policies\v2\TicketPolicy;
 use App\services\v1\AuthorService;
 use App\services\v1\TicketService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Auth;
+
 
 
 class TicketsController extends Controller
@@ -91,7 +90,6 @@ class TicketsController extends Controller
     function update(UpdateTicketRequest $request, int $ticket_id)
     {
         try{
-
             $ticket = $this->ticketService->findTicketById($ticket_id);
 
             $this->authorize('update', $ticket);
@@ -100,14 +98,11 @@ class TicketsController extends Controller
 
             return TicketsResource::make($ticket);
 
-
-
         }
         catch (AuthorizationException){
-            return response()->json([
-                'error' => "you cant update user because you dont have the permission to do so"
-            ],401);
-        }
+                    return response()->json([
+                        'error' => "you cant update user because you dont have the permission to do so"
+                    ],403);        }
         catch (ModelNotFoundException){
             return response()->json(
                 [
@@ -123,14 +118,16 @@ class TicketsController extends Controller
         try {
             $ticket = $this->ticketService->findTicketById($ticket_id);
 
+            $this->authorize('replace', $ticket);
+
             $this->ticketService->update($ticket, $request->mappedAttributes());
 
             return TicketsResource::make($ticket);
 
         } catch (ModelNotFoundException) {
-            return response()->json([
-                'error' => "there are no ticket with the id {$ticket_id} in our database"
-            ], 404);
+            return $this->error("there are no ticket with the id {$ticket_id} in our database", 404);
+        }catch (AuthorizationException){
+            return $this->error("You don't have permission to replace a ticket for this author.", 401);
         }
 
     }
@@ -150,11 +147,14 @@ class TicketsController extends Controller
 
             return response()->noContent();
 
-        } catch (ModelNotFoundException) {
-            return response()->json([
-                'error' => "There is no ticket with the id {$ticket_id} in our database."
-            ], 404);
         }
+        catch (ModelNotFoundException) {
+            return $this->error("There is no ticket with the id {$ticket_id} in our database.", 404);
+        }
+        catch (AuthorizationException){
+            return $this->error("You don't have permission to delete a ticket for this author.", 401);
+        }
+
 
     }
 }

@@ -22,7 +22,7 @@ class Abilities
 
     final public static function getAbilities(User $user): array
     {
-        if ($user->is_manager) {
+        if ($user->is_manger) {
             return [
                 self::CreateTicket,
                 self::UpdateTicket,

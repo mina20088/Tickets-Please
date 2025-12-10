@@ -19,6 +19,7 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable , HasApiTokens;
 
+
     /**
      * The attributes that are mass assignable.
      *
@@ -50,6 +51,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'is_manger' => 'bool',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
@@ -64,5 +66,10 @@ class User extends Authenticatable
     public function scopeFilter(Builder $builder, RequestFilter $filter): Builder
     {
         return $filter->apply($builder);
+    }
+
+    public function scopeIsManger(Builder $builder , User $user):bool {
+
+        return $user->is_manger;
     }
 }
