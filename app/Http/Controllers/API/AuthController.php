@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\LoginRequest;
 use App\Models\User;
+use App\Permissions\Abilities;
 use App\traits\ApiResponse;
 
 use Illuminate\Http\Request;
@@ -25,7 +26,11 @@ class AuthController extends Controller
 
         $user = User::firstWhere('email', $request->email);
 
-        $token = $user->createToken('auth_token-' . $user->email ,expiresAt: Carbon::now()->addHour())->plainTextToken;
+        $token = $user->createToken(
+            name:'auth_token-' . $user->email ,
+            abilities: Abilities::getAbilities($user),
+            expiresAt: Carbon::now()->addHour()
+        )->plainTextToken;
 
         return $this->ok('Authenticated', ['token' =>  $token]);
     }

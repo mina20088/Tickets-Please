@@ -2,7 +2,6 @@
 
 namespace App\services\v1;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 

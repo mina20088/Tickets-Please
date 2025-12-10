@@ -12,7 +12,7 @@ class StoreTicketRequest extends BaseTicketRequest
      */
     public function authorize(): bool
     {
-        return true;
+         return true;
     }
 
     /**

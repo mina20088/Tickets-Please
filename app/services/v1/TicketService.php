@@ -97,4 +97,15 @@ class TicketService extends RequestFilter
         ]);
     }
 
+    public function patch($ticket,array $validatedData): int
+    {
+        $updated = 0;
+
+         foreach ($validatedData as $key => $value) {
+             $updated = $ticket->update([$key => $value]);
+         }
+
+         return $updated;
+    }
+
 }

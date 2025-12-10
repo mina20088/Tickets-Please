@@ -8,14 +8,19 @@ use App\Http\Requests\API\V1\TicketsRequests\StoreTicketRequest;
 use App\Http\Requests\API\V1\TicketsRequests\UpdateTicketRequest;
 use App\Http\Resources\V1\TicketsResource;
 use App\Models\Ticket;
+use App\Models\User;
+use App\Policies\v2\TicketPolicy;
 use App\services\v1\AuthorService;
 use App\services\v1\TicketService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
 
 
 class TicketsController extends Controller
 {
 
+    protected string  $PolicyClass = TicketPolicy::class;
     public function __construct(
         protected TicketService $ticketService,
         protected AuthorService $authorService
@@ -38,15 +43,22 @@ class TicketsController extends Controller
     function store(StoreTicketRequest $request)
     {
         try {
+            // Retrieve the author from the request to authorize against.
+            $authorId = $request->input('data.relationships.author.data.id');
+
+            $author = $this->authorService->findUserById($authorId);
+
+            $this->authorize('create', [Ticket::class, $author]);
 
             $ticket = $this->ticketService->create($request->mappedAttributes());
 
             return TicketsResource::make($ticket->load('author'));
 
         } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'error' => "there are no other with the id {$request->input('data.relationships.author.data.id')} in our database}"
-            ], 404);
+            return $this->error("There is no author with the id {$request->input('data.relationships.author.data.id')} in our database.", 404);
+        }
+        catch (AuthorizationException){
+            return $this->error("You don't have permission to create a ticket for this author.", 401);
         }
 
     }
@@ -72,14 +84,38 @@ class TicketsController extends Controller
         }
 
     }
-
     /**
      * Update the specified resource in storage.
      */
     public
-    function update(UpdateTicketRequest $request, Ticket $ticket)
+    function update(UpdateTicketRequest $request, int $ticket_id)
     {
-        //
+        try{
+
+            $ticket = $this->ticketService->findTicketById($ticket_id);
+
+            $this->authorize('update', $ticket);
+
+            $this->ticketService->patch($ticket,$request->mappedAttributes());
+
+            return TicketsResource::make($ticket);
+
+
+
+        }
+        catch (AuthorizationException){
+            return response()->json([
+                'error' => "you cant update user because you dont have the permission to do so"
+            ],401);
+        }
+        catch (ModelNotFoundException){
+            return response()->json(
+                [
+                    'error' => "there are no ticket with the id {$ticket_id} in our database"
+                ],
+                404
+            );
+        }
     }
 
     public function replace(ReplaceTicketRequest $request, int $ticket_id)
@@ -108,14 +144,16 @@ class TicketsController extends Controller
         try {
             $ticket = $this->ticketService->findTicketById($ticket_id);
 
+            $this->authorize('delete', $ticket);
+
             $ticket->delete();
 
             return response()->noContent();
 
         } catch (ModelNotFoundException) {
             return response()->json([
-                'error' => "there are no ticket with the id {$ticket_id} in our database"
-            ], 201);
+                'error' => "There is no ticket with the id {$ticket_id} in our database."
+            ], 404);
         }
 
     }
