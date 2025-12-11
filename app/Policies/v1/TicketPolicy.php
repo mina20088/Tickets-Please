@@ -11,14 +11,13 @@ use Illuminate\Support\Facades\Auth;
 class TicketPolicy
 {
 
-    public function create(User $author , User $user): bool
+    public function create(User $author, User $user_id): bool
     {
-        clock($user);
         if ($author->tokenCan(Abilities::CreateTicket)) {
             return true;
         }
         if($author->tokenCan(Abilities::CreateOwnTicket)){
-            return $author->id == $user->id;
+             return  $author->id === $user_id->id;
         }
         return false;
     }

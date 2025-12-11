@@ -25,7 +25,6 @@ class Ticket extends Model
         'description',
         'status',
         'user_id',
-        'data'
     ];
 
     public function author() :BelongsTo {

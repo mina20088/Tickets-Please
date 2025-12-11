@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests\API\V1\TicketsRequests;
 
+use App\Permissions\Abilities;
 use App\Rules\AuthorExists;
 use App\services\v1\RequestFilter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTicketRequest extends BaseTicketRequest
 {
@@ -27,7 +29,7 @@ class UpdateTicketRequest extends BaseTicketRequest
         $rules = [
             'data.attributes.title' => ['sometimes' , 'string'],
             'data.attributes.description' => ['sometimes', 'string' , 'max:1000'],
-            'data.attributes.status' => ['sometimes', 'in:A,C,H,X']
+            'data.attributes.status' => ['sometimes', 'in:A,C,H,X', Rule::prohibitedIf($this->user()->tokenCant(Abilities::ReplaceTicket))]
         ];
 
         if(request()->routeIs('authors.tickets.*'))
@@ -38,5 +40,12 @@ class UpdateTicketRequest extends BaseTicketRequest
         }
 
         return $rules;
+    }
+
+    public function messages(): array
+    {
+        return [
+            'data.attributes.status.prohibitedIf' => "you are not authorized update status of this ticket",
+        ];
     }
 }

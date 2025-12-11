@@ -5,6 +5,7 @@ namespace App\Http\Requests\API\V1\TicketsRequests;
 use App\Permissions\Abilities;
 use App\Rules\AuthorExists;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Validation\Rule;
 
 class StoreTicketRequest extends BaseTicketRequest
 {
@@ -23,19 +24,24 @@ class StoreTicketRequest extends BaseTicketRequest
      */
     public function rules(): array
     {
-        $rules = [
+        /*        if($this->user()->tokenCan(Abilities::CreateOwnTicket))
+        {
+            $rules['data.relationships.author.data.id'][] = 'in:' . $this->user()->id;
+        }*/
+
+        return [
             'data.attributes.title' => 'required|string',
             'data.attributes.description' => 'required|string',
             'data.attributes.status' => 'required|string|in:A,C,H,X',
             'data.relationships.author.data.id' => ['required', 'integer', new AuthorExists()]
         ];
+    }
 
-        if($this->user()->tokenCan(Abilities::CreateOwnTicket))
-        {
-            $rules['data.relationships.author.data.id'][] = ['in:' , $this->user()->id];
-        }
-
-        return $rules;
+    public function messages(): array
+    {
+        return [
+            'data.relationships.author.data.id.in' => "you are not authorized to create",
+        ];
     }
 
 

@@ -29,6 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_manger'
     ];
 
     /**
@@ -58,7 +59,7 @@ class User extends Authenticatable
     }
 
 
-    public function Tickets(): User|HasMany
+    public function tickets(): User|HasMany
     {
         return $this->hasMany(Ticket::class);
     }
