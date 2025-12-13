@@ -69,6 +69,12 @@ class TicketService extends RequestFilter
         return Ticket::findOrFail($id);
     }
 
+    public function findUsersTicketByUserId(int $ticket_id,int $user_id): Ticket
+    {
+
+        return Ticket::where('id' , $ticket_id)->where('user_id', $user_id)->firstOrFail();
+    }
+
     public function getAuthorTickets(int $user_id): LengthAwarePaginator
     {
         return Ticket::where('user_id', $user_id)

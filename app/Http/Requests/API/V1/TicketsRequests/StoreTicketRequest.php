@@ -9,33 +9,41 @@ use Illuminate\Validation\Rule;
 
 class StoreTicketRequest extends BaseTicketRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+
+    protected array $rules = [];
+
     public function authorize(): bool
     {
          return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array|string>
-     */
+    protected function prepareForValidation(): void
+    {
+        if($this->routeIs('tickets.store')){
+
+            $this->merge([
+                'data.relationships.author.data.id' => $this->input('data.relationships.author.data.id')
+            ]);
+        }
+    }
+
     public function rules(): array
     {
-        /*        if($this->user()->tokenCan(Abilities::CreateOwnTicket))
-        {
-            $rules['data.relationships.author.data.id'][] = 'in:' . $this->user()->id;
-        }*/
-
-        return [
+        $this->rules = [
             'data.attributes.title' => 'required|string',
             'data.attributes.description' => 'required|string',
             'data.attributes.status' => 'required|string|in:A,C,H,X',
-            'data.relationships.author.data.id' => ['required', 'integer', new AuthorExists()]
         ];
+
+        if($this->routeIs('tickets.store')){
+           $this->rules['data.relationships.author.data.id'] = ['required', 'integer', new AuthorExists()];
+        }
+
+
+        return $this->rules;
     }
+
+
 
     public function messages(): array
     {

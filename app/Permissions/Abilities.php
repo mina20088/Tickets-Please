@@ -6,6 +6,7 @@ use App\Models\User;
 
 class Abilities
 {
+    public const ListTickets = 'ticket:list';
     public const CreateTicket = 'ticket:create';
     public const UpdateTicket = 'ticket:update';
     public const ReplaceTicket = 'ticket:replace';
@@ -14,6 +15,7 @@ class Abilities
     public const CreateOwnTicket = 'ticket:own:create';
     public const UpdateOwnTicket = 'ticket:own:update';
     public const DeleteOwnTicket = 'ticket:own:delete';
+    public const ListOwnTickets =  'ticket:own:list';
 
     public const CreateUser = 'user:create';
     public const UpdateUser = 'user:update';
@@ -24,6 +26,7 @@ class Abilities
     {
         if ($user->is_manger) {
             return [
+                self::ListTickets,
                 self::CreateTicket,
                 self::UpdateTicket,
                 self::ReplaceTicket,
@@ -37,7 +40,8 @@ class Abilities
             return [
                 self::UpdateOwnTicket,
                 self::DeleteOwnTicket,
-                self::CreateOwnTicket
+                self::CreateOwnTicket,
+                self::ListOwnTickets,
             ];
         }
     }

@@ -8,8 +8,11 @@ use App\Http\Requests\API\V1\TicketsRequests\StoreTicketRequest;
 use App\Http\Requests\API\V1\TicketsRequests\UpdateTicketRequest;
 use App\Http\Resources\V1\TicketsResource;
 use App\Models\Ticket;
+use App\Models\User;
 use App\services\v1\AuthorService;
 use App\services\v1\TicketService;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
@@ -24,26 +27,32 @@ class AuthorTicketsController extends Controller
     public function index(int $author_id)
     {
         try{
+
+
             $author = $this->authorService->findUserById($author_id);
+
+            $this->authorize("viewAny", [Ticket::class, $author]);
 
             $tickets = $this->ticketService->getAuthorTickets($author->id);
 
             return TicketsResource::collection($tickets);
 
         }catch (ModelNotFoundException) {
+            return $this->error("there are no author with the id {$author_id} in our database}", 404);
 
-            return response()->json([
-                'error' => "there are no author with the id {$author_id} in our database}"
-            ], 404);
+        }catch (AuthorizationException){
+            return $this->error('you are not authorized to view this resource', 401);
         }
 
 
     }
 
-    public function store(int $author_id, StoreTicketRequest $request)
+    public function store(StoreTicketRequest $request, int $author_id)
     {
         try{
             $author =  $this->authorService->findUserById($author_id);
+
+            $this->authorize('create', [Ticket::class, $author]);
 
             $ticket = $this->authorService->createUserTicket($author, $request->mappedAttributes());
 
@@ -51,48 +60,43 @@ class AuthorTicketsController extends Controller
         }
         catch (ModelNotFoundException)
         {
-            return response()->json([
-                'error' => "there are no author with the id {$author_id} in our database}"
-            ], 404);
+            return $this->error("there are no author with the id {$author_id}", 404);
+
+        }catch(AuthorizationException){
+            return $this->error('you are not authorized to create a ticket for this author', 401);
         }
 
 
     }
 
-    public function replace(int $author_id, int $ticket_id, ReplaceTicketRequest $request)
+    public function replace(ReplaceTicketRequest $request,int $author_id, int $ticket_id)
     {
 
         try {
-            $ticket = $this->ticketService->findTicketById($ticket_id);
 
-            if($author_id !== $ticket->user_id){
-                return response()->json([
-                    'error' => "you are not authorized to update this resource"
-                ]);
-            }
+            $this->authorize('replace', [Ticket::class]);
+
+            $ticket = $this->ticketService->findTicketById($ticket_id);
 
             $this->ticketService->update($ticket, $request->mappedAttributes());
 
             return TicketsResource::make($ticket);
 
         }catch (ModelNotFoundException){
-            return response()->json([
-                'error' => "there are no ticket with the id {$ticket_id} in our database"
-            ],404);
+            return $this->error('there are no ticket with the id {$ticket_id} in our database', 404);
+        }catch (AuthorizationException) {
+            return $this->error('you are not authorized to replace this resource', 401);
         }
 
     }
 
-    public function update(int $author_id, int $ticket_id, UpdateTicketRequest $request)
+    public function update(UpdateTicketRequest $request, int $author_id, int $ticket_id )
     {
         try {
-            $ticket = $this->ticketService->findTicketById($ticket_id);
 
-            if($author_id !== $ticket->user_id){
-                return response()->json([
-                    'error' => "you are not authorized to update this resource"
-                ]);
-            }
+            $ticket = $this->ticketService->findUsersTicketByUserId($ticket_id, $author_id);
+
+            $this->authorize('update', $ticket);
 
             $this->ticketService->patch($ticket, $request->mappedAttributes());
 

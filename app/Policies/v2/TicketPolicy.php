@@ -9,7 +9,7 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TicketPolicy
 {
-    use HandlesAuthorization;
+/*    use HandlesAuthorization;
 
     public function viewAny(User $user): bool
     {
@@ -62,5 +62,5 @@ class TicketPolicy
 
     public function forceDelete(User $user, Ticket $ticket): bool
     {
-    }
+    }*/
 }

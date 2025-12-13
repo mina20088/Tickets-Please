@@ -8,7 +8,7 @@ use App\Http\Requests\API\V1\TicketsRequests\StoreTicketRequest;
 use App\Http\Requests\API\V1\TicketsRequests\UpdateTicketRequest;
 use App\Http\Resources\V1\TicketsResource;
 use App\Models\Ticket;
-use App\Policies\v2\TicketPolicy;
+use App\Policies\v1\TicketPolicy;
 use App\services\v1\AuthorService;
 use App\services\v1\TicketService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -19,13 +19,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 class TicketsController extends Controller
 {
 
-    protected string  $PolicyClass = TicketPolicy::class;
     public function __construct(
         protected TicketService $ticketService,
         protected AuthorService $authorService
-    )
-    {
-    }
+    ){}
 
     public function index()
     {
@@ -74,12 +71,8 @@ class TicketsController extends Controller
             return TicketsResource::make($ticket);
 
         } catch (ModelNotFoundException) {
-            return response()->json(
-                [
-                    'error' => "there are no ticket with the id {$ticket_id} in our database"
-                ],
-                404
-            );
+
+            return $this->error("there are no ticket with the id {$ticket_id} in our database", 404);
         }
 
     }
